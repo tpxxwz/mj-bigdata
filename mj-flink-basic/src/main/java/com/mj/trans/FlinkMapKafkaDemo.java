@@ -1,0 +1,54 @@
+package com.mj.trans;
+
+import com.alibaba.fastjson2.JSON;
+import com.mj.dto.User;
+import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.functions.source.legacy.SourceFunction;
+
+import java.util.concurrent.TimeUnit;
+
+public class FlinkMapKafkaDemo {
+    public static void main(String[] args) throws Exception {
+        // 创建执行环境
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+
+        // 模拟用户数据源
+        DataStream<String> sourceStream = env.addSource(new SourceFunction<String>() {
+            @Override
+            public void run(SourceContext<String> ctx) throws Exception {
+                String[] users = {
+                        "{\"userId\":1,\"name\":\"Alice\",\"age\":25,\"gender\":\"female\",\"registrationTimestamp\":1620000000000}",
+                        "{\"userId\":2,\"name\":\"Bob\",\"age\":30,\"gender\":\"male\",\"registrationTimestamp\":1620000100000}",
+                        "{\"userId\":3,\"name\":\"Charlie\",\"age\":35,\"gender\":\"male\",\"registrationTimestamp\":1620000200000}"
+                };
+                for (String user : users) {
+                    ctx.collect(user);
+                    TimeUnit.SECONDS.sleep(1); // 模拟实时数据流
+                }
+            }
+
+            @Override
+            public void cancel() {
+            }
+        });
+
+        // 使用 MapFunction 将 JSON 字符串解析为 User 对象
+        DataStream<User> parsedStream = sourceStream.map(new MapFunction<String, User>() {
+            @Override
+            public User map(String value) throws Exception {
+                // 这里可以使用 JSON 库（如 Jackson 或 Gson）来解析 JSON 字符串
+                return JSON.parseObject(value, User.class);
+            }
+        });
+
+        // 打印解析后的用户对象
+        parsedStream.print();
+
+        // 执行 Flink 任务
+        env.execute("Flink Map Example");
+    }
+
+
+}

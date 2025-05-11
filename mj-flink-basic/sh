@@ -1,0 +1,16 @@
+/usr/hdp/3.3.3.0-002/kafka/bin/kafka-console-producer.sh --bootstrap-server mj01:6667   --topic test
+
+/usr/hdp/3.3.3.0-002/kafka/bin/kafka-topics.sh --create --bootstrap-server mj01:6667   --topic sink1  --partitions 3    --replication-factor 3
+
+/usr/hdp/3.3.3.0-002/kafka/bin/kafka-topics.sh --create --bootstrap-server mj01:6667   --topic test  --partitions 3   --replication-factor 3
+
+/usr/hdp/3.3.3.0-002/kafka/bin/kafka-console-consumer.sh  --bootstrap-server mj01:6667 --topic test --from-beginning
+
+/usr/hdp/3.3.3.0-002/kafka/bin/kafka-topics.sh --create --bootstrap-server mj01:6667   --topic off_topic  --partitions 3   --replication-factor 3
+/usr/hdp/3.3.3.0-002/kafka/bin/kafka-topics.sh --create --bootstrap-server mj01:6667   --topic on_topic  --partitions 3   --replication-factor 3
+/usr/hdp/3.3.3.0-002/kafka/bin/kafka-topics.sh --create --bootstrap-server mj01:6667   --topic orders  --partitions 3   --replication-factor 3
+/usr/hdp/3.3.3.0-002/kafka/bin/kafka-topics.sh --create --bootstrap-server mj01:6667   --topic payments  --partitions 3   --replication-factor 3
+/usr/hdp/3.3.3.0-002/kafka/bin/kafka-topics.sh --create --bootstrap-server mj01:6667   --topic user_clicks  --partitions 3   --replication-factor 3
+/usr/hdp/3.3.3.0-002/kafka/bin/kafka-topics.sh --create --bootstrap-server mj01:6667   --topic user_purchases  --partitions 3   --replication-factor 3
+
+/usr/hdp/3.3.3.0-002/kafka/bin/kafka-topics.sh --create --bootstrap-server mj01:6667   --topic window  --partitions 3   --replication-factor 3

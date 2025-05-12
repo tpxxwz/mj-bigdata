@@ -8,6 +8,7 @@ public class MapDemo1 {
     public static void main(String[] args) throws Exception {
         // 1. 获取流执行环境
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.disableOperatorChaining();
         // 2. 创建输入数据流
         DataStream<String> input = env.fromElements(
                 "flink",
@@ -23,9 +24,10 @@ public class MapDemo1 {
                     }
                 }
         );
-        output.shuffle();
+        DataStream<String> output1 = output.rescale();
+        //output.broadcast()
         // 4. 打印输出结果
-        output.print();
+        output1.print();
         // 5. 执行作业
         env.execute("String Uppercase Transformation Demo");  // 更符合实际功能的作业名称
     }

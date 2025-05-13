@@ -1,4 +1,4 @@
-package com.mj.kafka;
+package com.mj.basic5.watermark;
 
 import com.alibaba.fastjson2.JSON;
 import com.mj.dto.UserWindow;
@@ -29,8 +29,8 @@ public class ProducerDemo {
         Random random = new Random();
         // 3. 发送消息
         try {
-            for (int i = 0; i < 9; i++) {
-                Thread.sleep(4000);
+            for (int i = 0; i < 2; i++) {
+                //Thread.sleep(4000);
                 // 同步发送
                 UserWindow userWindow = new UserWindow("10000", random.nextInt(500), System.currentTimeMillis());
                 String wd = JSON.toJSON(userWindow).toString();

@@ -46,6 +46,7 @@ public class WaterMarkDemo1 {
         DataStream<UserWindow> parsedStream = sourceStream.map(
                 value -> JSON.parseObject(value, UserWindow.class)
         );
+        env.getConfig().setAutoWatermarkInterval(200); // 每200ms生成一次水位线
 
         // 6. 设置事件时间和 Watermark
     /*    WatermarkStrategy<UserWindow> orderWatermarkStrategy =
@@ -53,7 +54,7 @@ public class WaterMarkDemo1 {
                         .withTimestampAssigner((event, ts) -> event.getEventTime());*/
         // 6. 设置事件时间和 Watermark
         WatermarkStrategy<UserWindow> orderWatermarkStrategy =
-                WatermarkStrategy.<UserWindow>forBoundedOutOfOrderness(Duration.ofSeconds(0))
+                WatermarkStrategy.<UserWindow>forBoundedOutOfOrderness(Duration.ofSeconds(3))
                         .withTimestampAssigner((event, ts) -> event.getEventTime());
 
         parsedStream = parsedStream.assignTimestampsAndWatermarks(orderWatermarkStrategy);

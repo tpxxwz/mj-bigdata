@@ -1,5 +1,10 @@
 package com.mj.dto;
 
+/**
+ * @author 码界探索
+ * 微信: 252810631
+ * @desc 版权所有，请勿外传
+ */
 public class PaymentEvent {
     private String orderId;
     private Long payTime; // 事件时间戳（毫秒）

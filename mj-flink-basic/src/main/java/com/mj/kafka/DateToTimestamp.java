@@ -3,6 +3,11 @@ package com.mj.kafka;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+/**
+ * @author 码界探索
+ * 微信: 252810631
+ * @desc 版权所有，请勿外传
+ */
 public class DateToTimestamp {
     public static void main(String[] args) {
         String dateString = "2025-05-09 17:24:18";

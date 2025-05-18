@@ -5,6 +5,11 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * @author 码界探索
+ * 微信: 252810631
+ * @desc 版权所有，请勿外传
+ */
 public class TimeConverter {
     public static String convertLongToDateTime(Long timestamp) {
         // 1. 转换为Instant对象

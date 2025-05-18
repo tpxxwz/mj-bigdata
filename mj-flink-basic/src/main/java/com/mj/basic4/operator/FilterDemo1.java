@@ -4,6 +4,11 @@ import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
+/**
+ * @author 码界探索
+ * 微信: 252810631
+ * @desc 版权所有，请勿外传
+ */
 public class FilterDemo1 {
     public static void main(String[] args) throws Exception {
         // 创建执行环境

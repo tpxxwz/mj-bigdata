@@ -9,6 +9,11 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import java.util.Properties;
 import java.util.Random;
 
+/**
+ * @author 码界探索
+ * 微信: 252810631
+ * @desc 版权所有，请勿外传
+ */
 public class ConnectProducerDemo {
 
     public static void main(String[] args) {

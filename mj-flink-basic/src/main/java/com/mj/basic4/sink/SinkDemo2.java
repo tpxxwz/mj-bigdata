@@ -18,6 +18,11 @@ import javax.sql.XADataSource;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+/**
+ * @author 码界探索
+ * 微信: 252810631
+ * @desc 版权所有，请勿外传
+ */
 public class SinkDemo2 {
     public static void main(String[] args) throws Exception {
         // 创建流处理环境

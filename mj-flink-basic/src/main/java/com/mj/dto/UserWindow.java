@@ -2,6 +2,11 @@ package com.mj.dto;
 
 import com.mj.utils.TimeConverter;
 
+/**
+ * @author 码界探索
+ * 微信: 252810631
+ * @desc 版权所有，请勿外传
+ */
 public class UserWindow {
     private String userId;
     private Long eventTime;

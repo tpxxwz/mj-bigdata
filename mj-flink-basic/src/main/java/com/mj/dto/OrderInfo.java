@@ -1,6 +1,11 @@
 package com.mj.dto;
 
-// 订单数据类
+
+/**
+ * @author 码界探索
+ * 微信: 252810631
+ * @desc 版权所有，请勿外传
+ */
 public  class OrderInfo {
     public Integer amount;    // 订单金额
     public String orderId;   // 订单编号

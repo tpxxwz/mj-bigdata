@@ -24,6 +24,11 @@ import org.apache.flink.util.OutputTag;
 
 import java.util.Collections;
 
+/**
+ * @author 码界探索
+ * 微信: 252810631
+ * @desc 版权所有，请勿外传
+ */
 public class NonKeyedProcessFunctionDemo {
     // 定义旁路输出的标签（用于分流金额超过1000的事件）
     private static final OutputTag<UserWindow> HIGH_AMOUNT_TAG = new OutputTag<>("high-amount", TypeInformation.of(UserWindow.class));

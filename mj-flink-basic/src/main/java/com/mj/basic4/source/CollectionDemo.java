@@ -5,6 +5,11 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * @author 码界探索
+ * 微信: 252810631
+ * @desc 版权所有，请勿外传
+ */
 public class CollectionDemo {
     public static void main(String[] args) throws Exception {
         // 1. 获取流执行环境

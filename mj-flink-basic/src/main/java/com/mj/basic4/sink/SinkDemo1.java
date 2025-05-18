@@ -13,6 +13,11 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 
 import java.util.Properties;
 
+/**
+ * @author 码界探索
+ * 微信: 252810631
+ * @desc 版权所有，请勿外传
+ */
 public class SinkDemo1 {
     public static void main(String[] args) throws Exception {
         // 创建流处理环境

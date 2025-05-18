@@ -2,6 +2,11 @@ package com.mj.basic4.partitioner;
 
 import org.apache.flink.api.common.functions.Partitioner;
 
+/**
+ * @author 码界探索
+ * 微信: 252810631
+ * @desc 版权所有，请勿外传
+ */
 public class DeviceTypePartitioner implements Partitioner<String> {
 
     @Override

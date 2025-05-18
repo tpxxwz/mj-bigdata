@@ -14,39 +14,3 @@
 /usr/hdp/3.3.3.0-002/kafka/bin/kafka-topics.sh --create --bootstrap-server mj01:6667   --topic user_purchases  --partitions 3   --replication-factor 3
 
 /usr/hdp/3.3.3.0-002/kafka/bin/kafka-topics.sh --create --bootstrap-server mj01:6667   --topic window  --partitions 3   --replication-factor 3
-
-use catalog paimon;
-create database if not exists paimon.dqc;
-drop table if exists dqc.table_meta;
-CREATE TABLE if not exists dqc.paimon_meta_statistics(
-  db_name String COMMENT '库名',
-  tbl_name String COMMENT '表名',
-  total_records bigint COMMENT '数据条数',
-  total_file_size bigint COMMENT '总文件大小',
-  file_cnt bigint COMMENT '文件数',
- `comment` String COMMENT '表注释',
-  dt STRING COMMENT '日期',
-  etl_dt varchar(40) COMMENT '入仓时间'
-  PRIMARY KEY(db_name, tbl_name,dt) NOT ENFORCED
-) COMMENT 'paimon元数据信息' WITH (
-    'connector'='paimon',
-    'bucket' = '1',
-	'changelog_producer'='none',
-	'merge-engine' = 'partial-update'
-) ;
-
-drop table  if exists dqc.paimon_meta_statistics;
-CREATE TABLE if not exists dqc.paimon_meta_statistics
-(
-    dt                    varchar(40) comment '日期',
-                db_name               varchar(40) comment '库名',
-                table_name            varchar(40) comment '表名',
-    total_records         BIGINT DEFAULT '0' COMMENT '总条数',
-    total_size            BIGINT DEFAULT '0' COMMENT '总大小',
-    etl_dt                 varchar(40) COMMENT '入仓时间',
-) UNIQUE KEY(dt,db_name,table_name) comment 'paimon ods层表数据量'
-DISTRIBUTED BY HASH(`table_name`) BUCKETS 3
-PROPERTIES (
-"replication_allocation" = "tag.location.default: 1",
-"enable_unique_key_merge_on_write" = "true"
-);

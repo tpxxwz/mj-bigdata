@@ -3,6 +3,11 @@ package com.mj.trans;
 import org.apache.flink.api.common.RuntimeExecutionMode;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
+/**
+ * @author 码界探索
+ * 微信: 252810631
+ * @desc 版权所有，请勿外传
+ */
 public class ExecutionModeEnv {
     public static void main(String[] args) throws Exception {
         //1.

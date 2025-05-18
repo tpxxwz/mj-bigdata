@@ -1,28 +1,32 @@
-package com.mj.basic1;
+package com.mj.basic2;
 
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.util.Collector;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author 码界探索
  * 微信: 252810631
  * @desc 版权所有，请勿外传
  */
-public class BatchWordCount {
+public class CollectionDemo {
     public static void main(String[] args) throws Exception {
-        // 1. 创建流执行环境（虽然处理批数据，但使用流API）
+        // 1. 获取流执行环境
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-
-        // 2. 创建模拟数据源（实际应用中可以替换为文件/消息队列等）
-        DataStream<String> sourceStream = env.fromElements(
-                "Hello World Hello Flink",
-                "Flink is World is beautiful"
+        // 2. 准备数据集合
+        List<String> data = Arrays.asList(
+                "aa", "aa", "cc", "dd",
+                "ee", "ff", "gg", "hh"
         );
-
+        // 3. 从集合创建数据流
+        DataStreamSource<String> sourceStream = env.fromCollection(data);
         // 3. 数据转换：拆分句子为单词元组（单词, 1）
         DataStream<Tuple2<String, Integer>> flatMap = sourceStream
                 .flatMap((String line, Collector<Tuple2<String, Integer>> out) -> {

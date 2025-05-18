@@ -14,6 +14,11 @@ import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.util.Collector;
 
+/**
+ * @author 码界探索
+ * 微信: 252810631
+ * @desc 版权所有，请勿外传
+ */
 public class StreamWordCount {
     public static void main(String[] args) throws Exception {
         // 1. 获取流执行环境
@@ -21,7 +26,7 @@ public class StreamWordCount {
         conf.setString(RestOptions.BIND_PORT.key(), "8081");
         StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironment(conf);
         //设置并行度为1
-        env.setParallelism(6);
+        env.setParallelism(2);
         //设置禁用合并链
         //env.disableOperatorChaining();
         // 2. 创建Kafka数据源
@@ -49,7 +54,8 @@ public class StreamWordCount {
                 .returns(Types.TUPLE(Types.STRING, Types.INT));
 
         // 5. KeyBy 单词
-        KeyedStream<Tuple2<String, Integer>, String> keyBy =parsedStream.keyBy(value -> value.f0);
+        KeyedStream<Tuple2<String, Integer>, String> keyBy =parsedStream
+                .keyBy(value -> value.f0);
 
         // 6.sum 聚合
         DataStream<Tuple2<String, Integer>> sumStream = keyBy

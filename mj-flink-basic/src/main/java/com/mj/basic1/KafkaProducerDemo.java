@@ -1,15 +1,17 @@
 package com.mj.basic1;
 
-import com.alibaba.fastjson2.JSON;
-import com.mj.dto.UserWindow;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
 
 import java.util.Properties;
 import java.util.Random;
 
+/**
+ * @author 码界探索
+ * 微信: 252810631
+ * @desc 版权所有，请勿外传
+ */
 public class KafkaProducerDemo {
 
     public static void main(String[] args) {

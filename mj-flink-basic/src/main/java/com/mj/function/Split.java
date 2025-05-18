@@ -4,6 +4,11 @@ import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.util.Collector;
 
+/**
+ * @author 码界探索
+ * 微信: 252810631
+ * @desc 版权所有，请勿外传
+ */
 public class Split implements FlatMapFunction<String, Tuple2<String,Integer>> {
     /**
      * 按照空格切分数据

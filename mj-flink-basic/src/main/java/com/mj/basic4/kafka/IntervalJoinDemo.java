@@ -1,7 +1,5 @@
 package com.mj.basic4.kafka;
 
-import com.alibaba.fastjson2.JSON;
-import com.mj.dto.OrderInfo;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -9,6 +7,11 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import java.util.Properties;
 import java.util.Random;
 
+/**
+ * @author 码界探索
+ * 微信: 252810631
+ * @desc 版权所有，请勿外传
+ */
 public class IntervalJoinDemo {
     public static void main(String[] args) {
         // 1. 配置Producer参数

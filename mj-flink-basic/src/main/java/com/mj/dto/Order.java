@@ -1,6 +1,10 @@
 package com.mj.dto;
 
-// 订单数据类
+/**
+ * @author 码界探索
+ * 微信: 252810631
+ * @desc 版权所有，请勿外传
+ */
 public  class Order {
     public String userId;    // 用户ID
     public Double amount;    // 订单金额

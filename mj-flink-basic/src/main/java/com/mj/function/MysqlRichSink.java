@@ -9,6 +9,11 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+/**
+ * @author 码界探索
+ * 微信: 252810631
+ * @desc 版权所有，请勿外传
+ */
 public class MysqlRichSink extends RichSinkFunction<Order> {
     private String url = "jdbc:mysql://mj_mysql:13306/test?serverTimezone=Asia/Shanghai&useSSL=false";
     private String username="root";

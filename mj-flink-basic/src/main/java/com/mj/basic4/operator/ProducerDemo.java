@@ -1,13 +1,11 @@
-package com.mj.basic4.kafka;
+package com.mj.basic4.operator;
 
 import com.alibaba.fastjson2.JSON;
-import com.mj.dto.OrderInfo;
-import com.mj.dto.PaymentEvent;
-import com.mj.dto.UserWindow;
+import com.mj.dto.MjOrderInfo;
+import com.mj.dto.MjSensorReading;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
 
 import java.util.Properties;
 import java.util.Random;
@@ -17,7 +15,7 @@ import java.util.Random;
  * 微信: 252810631
  * @desc 版权所有，请勿外传
  */
-public class OrderInfoProducerDemo {
+public class ProducerDemo {
 
     public static void main(String[] args) {
         // 1. 配置Producer参数
@@ -37,16 +35,12 @@ public class OrderInfoProducerDemo {
         // 3. 发送消息
         try {
             // 同步发送
-            OrderInfo offOrder = new OrderInfo("1003", random.nextInt(500), System.currentTimeMillis());
-            PaymentEvent onOrder = new PaymentEvent("100002", System.currentTimeMillis());
-            String offData = JSON.toJSON(offOrder).toString();
-            String onData = JSON.toJSON(onOrder).toString();
-            ProducerRecord<String, String> offTopic =
-                    new ProducerRecord<>("orders", "key", offData);
-            ProducerRecord<String, String> onTopic =
-                    new ProducerRecord<>("payments", "key", onData);
-            producer.send(offTopic).get(); // 阻塞等待结果
-            producer.send(onTopic).get(); // 阻塞等待结果
+            MjSensorReading sensor = new MjSensorReading("devide_001",System.currentTimeMillis(),40);
+            String data = JSON.toJSONString(sensor);
+            System.out.println(data);
+            ProducerRecord<String, String> record =
+                    new ProducerRecord<>("window", "key",data);
+            producer.send(record).get(); // 阻塞等待结果
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

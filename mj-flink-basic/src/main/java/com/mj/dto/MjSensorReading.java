@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor  // Flink 必须的
 @AllArgsConstructor
-public class SensorReading {
+public class MjSensorReading {
     private String deviceId;
     private long timestamp;
     private double temperature;

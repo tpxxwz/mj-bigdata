@@ -1,20 +1,14 @@
 package com.mj.basic4.sink;
 
-import com.mj.dto.Order;
-import com.mj.function.MysqlRichSink;
-import com.mysql.cj.jdbc.MysqlXADataSource;
-import org.apache.flink.connector.jdbc.JdbcExactlyOnceOptions;
-import org.apache.flink.connector.jdbc.JdbcExecutionOptions;
-import org.apache.flink.connector.jdbc.JdbcStatementBuilder;
-import org.apache.flink.connector.jdbc.core.datastream.sink.JdbcSink;
-import org.apache.flink.connector.kafka.sink.KafkaSink;
+import com.mj.dto.MjOrderInfo;
+import org.apache.flink.api.common.functions.OpenContext;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.functions.sink.legacy.SinkFunction;
-import org.apache.flink.util.function.SerializableSupplier;
+import org.apache.flink.streaming.api.functions.sink.legacy.RichSinkFunction;
 
-import javax.sql.XADataSource;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
@@ -30,40 +24,66 @@ public class SinkDemo2 {
         //设置并行度
         env.setParallelism(1);
         // 模拟输入数据流（实际场景可能来自Kafka/Socket等）
-        DataStream<Order> orders = env.fromElements(
-                new Order("user1", 199.0, "O1001"),
-                new Order("user2", 299.0, "O1002"),
-                new Order("user1", 599.0, "O1003"),
-                new Order("user2", 99.0,  "O1004"),
-                new Order("user1", 899.0, "O1005")
+        DataStream<MjOrderInfo> orders = env.fromElements(
+                new MjOrderInfo("order1","user1", 199, System.currentTimeMillis()),
+                new MjOrderInfo("order2","user2", 299, System.currentTimeMillis()),
+                new MjOrderInfo("order11","user1", 599, System.currentTimeMillis()),
+                new MjOrderInfo("order22","user2", 99, System.currentTimeMillis()),
+                new MjOrderInfo("order111","user2", 899, System.currentTimeMillis())
         );
         // 1. 按用户分组（根据userId进行KeyBy）
-        KeyedStream<Order, String> keyedOrders = orders.keyBy(order -> order.userId);
+        KeyedStream<MjOrderInfo, String> keyedOrders = orders.keyBy(order -> order.getUserId());
         // 2. 计算每个用户的总金额（累加操作）
-        DataStream<Order> totalAmount = keyedOrders.sum("amount");
+        DataStream<MjOrderInfo> totalAmount = keyedOrders.sum("amount");
         totalAmount.addSink(new MysqlRichSink());
-
-
-        //将流中的数据写入到Mysql
-        /*SinkFunction<Order> jdbcSink = JdbcSink.<Order>builder().buildExactlyOnce(
-                JdbcExactlyOnceOptions.builder()
-                        .withTransactionPerConnection(true)
-                        .build(),
-                new SerializableSupplier<XADataSource>() {
-                    @Override
-                    public XADataSource get() {
-                        //按照使用的数据库来创建对应的XADataSource
-                        MysqlXADataSource mysqlXADataSource = new MysqlXADataSource();
-                        mysqlXADataSource.setUrl("jdbc:mysql://hadoop102:3306/test");
-                        mysqlXADataSource.setUser("root");
-                        mysqlXADataSource.setPassword("000000");
-                        return mysqlXADataSource;
-                    }
-                }
-        );*/
-
-
-
         env.execute("订单数据分析");
     }
+    static class MysqlRichSink extends RichSinkFunction<MjOrderInfo> {
+        private String url = "jdbc:mysql://mj_mysql:13306/test?serverTimezone=Asia/Shanghai&useSSL=false";
+        private String username="root";
+        private String password="mj20240313_";
+        private  String sql="INSERT INTO `orders` (`user_id`, `amount`, `order_id`) \n" +
+                "VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = VALUES(amount)";
+        private transient Connection connection;
+        private transient PreparedStatement preparedStatement;
+
+        @Override
+        public void open(OpenContext openContext) throws Exception {
+            // 初始化数据库连接（每个并行实例独立连接）
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            connection = DriverManager.getConnection(url, username, password);
+            connection.setAutoCommit(false); // 关闭自动提交
+            preparedStatement = connection.prepareStatement(sql);
+        }
+
+        @Override
+        public void invoke(MjOrderInfo order, Context context) throws Exception {
+            try {
+                // 设置参数
+                preparedStatement.setString(1, order.getUserId());
+                preparedStatement.setDouble(2, order.getAmount());
+                preparedStatement.setString(3, order.getOrderId());
+                preparedStatement.execute();
+                connection.commit();
+            } catch (SQLException e) {
+                connection.rollback(); // 异常回滚
+                throw new RuntimeException("数据库写入失败", e);
+            }
+        }
+
+        @Override
+        public void close() throws Exception {
+            // 最终提交剩余批次
+            if (preparedStatement != null) {
+                preparedStatement.executeBatch();
+                connection.commit();
+            }
+            // 关闭资源
+            if (preparedStatement != null) preparedStatement.close();
+            if (connection != null) connection.close();
+            super.close();
+        }
+    }
 }
+
+

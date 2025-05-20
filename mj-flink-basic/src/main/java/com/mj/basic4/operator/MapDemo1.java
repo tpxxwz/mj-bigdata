@@ -1,7 +1,13 @@
 package com.mj.basic4.operator;
 
+import com.alibaba.fastjson2.JSON;
+import com.mj.utils.KafkaUtils;
+import com.mj.dto.MjSensorReading;
+import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.connector.kafka.source.KafkaSource;
 import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
 /**
@@ -13,24 +19,31 @@ public class MapDemo1 {
     public static void main(String[] args) throws Exception {
         // 1. 获取流执行环境
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        // 2. 创建输入数据流
-        DataStream<String> input = env.fromElements(
-                "flink",
-                "spark",
-                "hadoop"
+
+        // 2. 调用工具类创建 KafkaSource
+        KafkaSource<String> kafkaSource = KafkaUtils.createKafkaSource(
+                "mj01:6667",       // Kafka 集群地址
+                "window",          // 订阅的主题
+                "mj-flink-basic"   // 消费者组ID
         );
-        // 3. 定义Map转换操作
-        DataStream<String> output = input.map(
-                new MapFunction<String, String>() {
-                    @Override
-                    public String map(String value) {
-                        return value.toUpperCase();  // 将字符串转换为大写
-                    }
-                }
+        // 3. 从 Kafka 源创建数据流
+        DataStreamSource<String> sourceStream = env.fromSource(
+                kafkaSource,
+                WatermarkStrategy.noWatermarks(),  // 水印策略
+                "kafka-source"                    // 数据源名称
         );
-        // 4. 打印输出结果
-        output.print();
-        // 5. 执行作业
-        env.execute("String Uppercase Transformation Demo");  // 更符合实际功能的作业名称
+        // 使用 MapFunction 将 JSON 字符串解析为 User 对象
+        DataStream<MjSensorReading> parsedStream = sourceStream.map(new MapFunction<String, MjSensorReading>() {
+            @Override
+            public MjSensorReading map(String value) throws Exception {
+                // 这里可以使用 JSON 库（如 Jackson 或 Gson）来解析 JSON 字符串
+                return JSON.parseObject(value, MjSensorReading.class);
+            }
+        });
+        // 打印解析后的用户对象
+        parsedStream.print();
+
+        // 执行 Flink 任务
+        env.execute("Flink Map Example");
     }
 }

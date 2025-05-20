@@ -36,7 +36,6 @@ public class StreamWordCount {
                 WatermarkStrategy.noWatermarks(),
                 "kafka-source"
         );
-
         // 4. 解析JSON数据
         DataStream<Tuple2<String,Integer>> parsedStream = sourceStream
                 .flatMap((String line, Collector<Tuple2<String, Integer>> out) -> {

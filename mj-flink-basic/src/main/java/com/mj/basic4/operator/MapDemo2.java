@@ -1,7 +1,7 @@
 package com.mj.basic4.operator;
 
 import com.alibaba.fastjson2.JSON;
-import com.mj.dto.User;
+import com.mj.dto.MjSensorReading;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -13,20 +13,20 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
  */
 public class MapDemo2 {
     public static void main(String[] args) throws Exception {
-        // 创建执行环境
+        // 1. 获取流执行环境
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        // 模拟从 Kafka 读取的数据流
+
+        // 2. 调用工具类创建 KafkaSource
+        // 创建日志数据源
         DataStream<String> sourceStream = env.fromElements(
-                "{\"userId\":1,\"name\":\"Alice\"}",
-                "{\"userId\":2,\"name\":\"Bob\"}",
-                "{\"userId\":3,\"name\":\"Charlie\"}"
+                "{\"deviceId\":\"devide_001\",\"temperature\":25.0,\"timestamp\":1747561278951}\n"
         );
         // 使用 MapFunction 将 JSON 字符串解析为 User 对象
-        DataStream<User> parsedStream = sourceStream.map(new MapFunction<String, User>() {
+        DataStream<MjSensorReading> parsedStream = sourceStream.map(new MapFunction<String, MjSensorReading>() {
             @Override
-            public User map(String value) throws Exception {
+            public MjSensorReading map(String value) throws Exception {
                 // 这里可以使用 JSON 库（如 Jackson 或 Gson）来解析 JSON 字符串
-                return JSON.parseObject(value, User.class);
+                return JSON.parseObject(value, MjSensorReading.class);
             }
         });
         // 打印解析后的用户对象

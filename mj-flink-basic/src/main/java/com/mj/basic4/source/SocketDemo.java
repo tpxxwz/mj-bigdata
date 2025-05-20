@@ -14,10 +14,8 @@ public class SocketDemo {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         // 2. 创建Socket数据源，监听localhost的9000端口
         DataStream<String> stream = env.socketTextStream(
-                "mj03",  // 主机名
-                9000,        // 端口号
-                "\n",        // 行分隔符
-                -1           // 最大重试次数（-1表示无限重试）
+                "mj01",  // 主机名
+                9000       // 端口号
         );
         // 3. 打印数据流
         stream.print();

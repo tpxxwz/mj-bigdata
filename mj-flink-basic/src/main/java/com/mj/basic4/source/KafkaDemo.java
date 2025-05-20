@@ -19,7 +19,7 @@ public class KafkaDemo {
         // 2. 创建Kafka数据源
         KafkaSource<String> kafkaSource = KafkaSource.<String>builder()
                 .setBootstrapServers("mj01:6667")          // Kafka集群地址
-                .setTopics("test")                         // 订阅的主题
+                .setTopics("window")                         // 订阅的主题
                 .setGroupId("mj-flink-basic")              // 消费者组ID
                 .setStartingOffsets(OffsetsInitializer.latest())  // 从最新偏移量开始消费
                 .setValueOnlyDeserializer(new SimpleStringSchema())  // 反序列化器

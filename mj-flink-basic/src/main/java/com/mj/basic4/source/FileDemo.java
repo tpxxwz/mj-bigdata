@@ -20,13 +20,12 @@ public class FileDemo {
         FileSource<String> fileSource = FileSource
                 .forRecordStreamFormat(
                         new TextLineInputFormat(),
-                        new Path("D:/tar_source/hello.txt")
-                )
-                .build();
+                        new Path("D:/mj/mj-bigdata/mj-flink-basic/tmp/hello.txt")
+                ).build();
         // 3. 从文件源创建数据流
         DataStreamSource<String> fileStream = env.fromSource(
                 fileSource,
-                WatermarkStrategy.noWatermarks(),
+                WatermarkStrategy.noWatermarks(),//处理延迟数据
                 "file-source"
         );
         // 4. 打印数据流

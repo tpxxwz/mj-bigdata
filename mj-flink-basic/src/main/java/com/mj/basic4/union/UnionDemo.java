@@ -1,8 +1,10 @@
 package com.mj.basic4.union;
 
 import com.alibaba.fastjson2.JSON;
+import com.mj.dto.MjOrderInfo;
 import com.mj.dto.OrderInfo;
 import com.mj.dto.UserWindow;
+import com.mj.utils.KafkaUtils;
 import com.mj.utils.TimeConverter;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
@@ -31,22 +33,18 @@ public class UnionDemo {
     public static void main(String[] args) throws Exception {
         // 1. 获取流执行环境
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        // 2. 调用工具类创建 KafkaSource
+        KafkaSource<String> offkafkaSource = KafkaUtils.createKafkaSource(
+                "mj01:6667",       // Kafka 集群地址
+                "off_topic",          // 订阅的主题
+                "mj-flink-basic"   // 消费者组ID
+        );
         // 2. 创建Kafka数据源
-        KafkaSource<String> offkafkaSource = KafkaSource.<String>builder()
-                .setBootstrapServers("mj01:6667")
-                .setTopics("off_topic")
-                .setGroupId("mj-flink-basic")
-                .setStartingOffsets(OffsetsInitializer.latest())
-                .setValueOnlyDeserializer(new SimpleStringSchema())
-                .build();
-        // 2. 创建Kafka数据源
-        KafkaSource<String> onkafkaSource = KafkaSource.<String>builder()
-                .setBootstrapServers("mj01:6667")
-                .setTopics("on_topic")
-                .setGroupId("mj-flink-basic")
-                .setStartingOffsets(OffsetsInitializer.latest())
-                .setValueOnlyDeserializer(new SimpleStringSchema())
-                .build();
+        KafkaSource<String> onkafkaSource = KafkaUtils.createKafkaSource(
+                "mj01:6667",       // Kafka 集群地址
+                "on_topic",          // 订阅的主题
+                "mj-flink-basic"   // 消费者组ID
+        );
         // 3. 从Kafka源创建数据流
         DataStreamSource<String> offOrderStream = env.fromSource(
                 offkafkaSource,
@@ -62,16 +60,10 @@ public class UnionDemo {
 
         DataStream<String> unionStream = offOrderStream.union(onOrderStream);
         // 4. 解析JSON数据
-        DataStream<OrderInfo> parsedStream = unionStream.map(
-                value -> JSON.parseObject(value, OrderInfo.class)
+        DataStream<MjOrderInfo> parsedStream = unionStream.map(
+                value -> JSON.parseObject(value, MjOrderInfo.class)
         );
-        // 5. KeyBy 订单ID
-        KeyedStream<OrderInfo, String> keyedStream = parsedStream.keyBy(OrderInfo::getOrderId);
-        // 统计每分钟订单金额
-        keyedStream
-                .windowAll(TumblingProcessingTimeWindows.of(Duration.ofSeconds(10)))
-                .sum("amount").print();
-
+        parsedStream.print();
         // 7. 执行作业
         env.execute("Window Data Printing Demo");
     }

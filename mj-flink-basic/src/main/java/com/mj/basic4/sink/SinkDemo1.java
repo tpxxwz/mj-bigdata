@@ -1,6 +1,7 @@
 package com.mj.basic4.sink;
 
 import com.alibaba.fastjson2.JSON;
+import com.mj.dto.MjOrderInfo;
 import com.mj.dto.Order;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.connector.base.DeliveryGuarantee;
@@ -25,17 +26,17 @@ public class SinkDemo1 {
         //设置并行度
         env.setParallelism(1);
         // 模拟输入数据流（实际场景可能来自Kafka/Socket等）
-        DataStream<Order> orders = env.fromElements(
-                new Order("user1", 199.0, "O1001"),
-                new Order("user2", 299.0, "O1002"),
-                new Order("user1", 599.0, "O1003"),
-                new Order("user2", 99.0,  "O1004"),
-                new Order("user1", 899.0, "O1005")
+        DataStream<MjOrderInfo> orders = env.fromElements(
+                new MjOrderInfo("order1","user1", 199, System.currentTimeMillis()),
+                new MjOrderInfo("order2","user2", 299, System.currentTimeMillis()),
+                new MjOrderInfo("order11","user1", 599, System.currentTimeMillis()),
+                new MjOrderInfo("order22","user2", 99, System.currentTimeMillis()),
+                new MjOrderInfo("order111","user2", 899, System.currentTimeMillis())
         );
         // 1. 按用户分组（根据userId进行KeyBy）
-        KeyedStream<Order, String> keyedOrders = orders.keyBy(order -> order.userId);
+        KeyedStream<MjOrderInfo, String> keyedOrders = orders.keyBy(order -> order.getUserId());
         // 2. 计算每个用户的总金额（累加操作）
-        DataStream<Order> totalAmount = keyedOrders.sum("amount");
+        DataStream<MjOrderInfo> totalAmount = keyedOrders.sum("amount");
         //转成json格式
         DataStream<String> result=  totalAmount.map(order -> JSON.toJSON(order).toString());
 

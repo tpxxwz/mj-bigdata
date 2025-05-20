@@ -1,8 +1,7 @@
-package com.mj.basic4.aggregation;
+package com.mj.basic4.execute;
 
 import com.mj.dto.MjOrderInfo;
-import com.mj.dto.Order;
-import org.apache.flink.api.common.functions.ReduceFunction;
+import org.apache.flink.api.common.JobExecutionResult;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -12,7 +11,7 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
  * 微信: 252810631
  * @desc 版权所有，请勿外传
  */
-public class AggregationReduce1 {
+public class ExecuteDemo {
     public static void main(String[] args) throws Exception {
         // 创建流处理环境
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
@@ -26,23 +25,9 @@ public class AggregationReduce1 {
                 new MjOrderInfo("order22","user2", 99, System.currentTimeMillis()),
                 new MjOrderInfo("order111","user2", 899, System.currentTimeMillis())
         );
-
-        // 1. 按用户分组（根据userId进行KeyBy）
-        KeyedStream<MjOrderInfo, String> keyedOrders = orders.keyBy(order -> order.getUserId());
-        // 使用Reduce获取最大订单
-        DataStream<MjOrderInfo> maxOrder = keyedOrders.reduce(new ReduceFunction<MjOrderInfo>() {
-            @Override
-            public MjOrderInfo reduce(MjOrderInfo currentMax, MjOrderInfo newOrder) {
-                // 比较并保留金额更大的订单
-                return (newOrder.getAmount() > currentMax.getAmount()) ?
-                        new MjOrderInfo(newOrder.getOrderId(),newOrder.getUserId(), newOrder.getAmount(), newOrder.getTs()) :
-                        new MjOrderInfo(currentMax.getOrderId(),currentMax.getUserId(), currentMax.getAmount(), System.currentTimeMillis());
-            }
-        });
-
-        // 输出结果
-        maxOrder.print("最大订单记录");
-
-        env.execute("订单数据分析");
+        orders.print();
+        // 5. 执行作业
+        JobExecutionResult result =  env.execute("ExecuteDemo Demo");
+        System.out.println(result.getNetRuntime());
     }
 }

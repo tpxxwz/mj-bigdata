@@ -1,12 +1,8 @@
-package com.mj.basic4.operator;
+package com.mj.utils;
 
-import com.alibaba.fastjson2.JSON;
-import com.mj.utils.KafkaUtils;
-import com.mj.dto.MjSensorReading;
+import org.apache.flink.api.common.JobExecutionResult;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
-import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.connector.kafka.source.KafkaSource;
-import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
@@ -15,7 +11,7 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
  * 微信: 252810631
  * @desc 版权所有，请勿外传
  */
-public class FilterDemo1 {
+public class KafkaDemo {
     public static void main(String[] args) throws Exception {
         // 1. 获取流执行环境
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
@@ -26,26 +22,19 @@ public class FilterDemo1 {
                 "window",          // 订阅的主题
                 "mj-flink-basic"   // 消费者组ID
         );
+
         // 3. 从 Kafka 源创建数据流
         DataStreamSource<String> sourceStream = env.fromSource(
                 kafkaSource,
                 WatermarkStrategy.noWatermarks(),  // 水印策略
                 "kafka-source"                    // 数据源名称
         );
-        // 使用 MapFunction 将 JSON 字符串解析为 User 对象
-        DataStream<MjSensorReading> parsedStream = sourceStream.map(new MapFunction<String, MjSensorReading>() {
-            @Override
-            public MjSensorReading map(String value) throws Exception {
-                // 这里可以使用 JSON 库（如 Jackson 或 Gson）来解析 JSON 字符串
-                return JSON.parseObject(value, MjSensorReading.class);
-            }
-        });
 
-        // 3. 使用filter操作筛选高温数据
-        DataStream<MjSensorReading> alerts = parsedStream.filter(r -> r.getTemperature() > 38.0);
-        // 4. 输出高温警报
-        alerts.print();
+        // 4. 打印数据流
+        sourceStream.print();
+
         // 5. 执行作业
-        env.execute("High Temperature Alert Job");
+        JobExecutionResult result =  env.execute("Kafka Stream Processing Demo");
+        System.out.println(result.getNetRuntime());
     }
 }

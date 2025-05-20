@@ -22,4 +22,8 @@ public class TimeConverter {
         return dateTime.format(formatter);
     }
 
+    public static void main(String[] args) {
+        System.out.println(convertLongToDateTime(1747580031737L));
+    }
+
 }

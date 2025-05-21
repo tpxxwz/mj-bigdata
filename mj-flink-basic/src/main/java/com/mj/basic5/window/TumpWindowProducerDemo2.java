@@ -1,21 +1,15 @@
-package com.mj.basic5.watermark;
+package com.mj.basic5.window;
 
 import com.alibaba.fastjson2.JSON;
-import com.mj.dto.UserWindow;
+import com.mj.basic5.data.WaterMarkData;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
 
 import java.util.Properties;
 import java.util.Random;
 
-/**
- * @author 码界探索
- * 微信: 252810631
- * @desc 版权所有，请勿外传
- */
-public class ProducerDemo {
+public class TumpWindowProducerDemo2 {
 
     public static void main(String[] args) {
         // 1. 配置Producer参数
@@ -34,18 +28,17 @@ public class ProducerDemo {
         Random random = new Random();
         // 3. 发送消息
         try {
-            for (int i = 0; i < 5; i++) {
-                Thread.sleep(4000);
-                // 同步发送
-                UserWindow userWindow = new UserWindow("10000", random.nextInt(500), System.currentTimeMillis());
-                String wd = JSON.toJSON(userWindow).toString();
-                System.out.println(wd);
-                ProducerRecord<String, String> record =
-                        new ProducerRecord<>("window", "key-" + i, wd);
-                RecordMetadata metadata = producer.send(record).get(); // 阻塞等待结果
-           /*     System.out.printf("Sent record(key=%s value=%s) to partition=%d offset=%d%n",
-                        record.key(), record.value(), metadata.partition(), metadata.offset());*/
-            }
+            //WaterMarkData userWindow = new WaterMarkData("10000","2025-05-20 17:00:00", 100);
+            //WaterMarkData userWindow = new WaterMarkData("10000","2025-05-20 17:00:10", 100);
+            //WaterMarkData userWindow = new WaterMarkData("10000","2025-05-20 17:00:09", 100);
+            WaterMarkData userWindow = new WaterMarkData("10000","2025-05-20 17:00:20", 100);
+
+            String data = JSON.toJSON(userWindow).toString();
+            System.out.println(data);
+            ProducerRecord<String, String> record =
+                    new ProducerRecord<>("window", "key", data);
+            producer.send(record).get(); // 阻塞等待结果
+
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

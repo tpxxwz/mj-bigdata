@@ -2,7 +2,7 @@ package com.mj.basic4.operator;
 
 import com.alibaba.fastjson2.JSON;
 import com.mj.utils.KafkaUtils;
-import com.mj.dto.MjSensorReading;
+import com.mj.bean.MjSensorReading;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.connector.kafka.source.KafkaSource;

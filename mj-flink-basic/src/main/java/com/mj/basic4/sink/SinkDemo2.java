@@ -1,6 +1,6 @@
 package com.mj.basic4.sink;
 
-import com.mj.dto.MjOrderInfo;
+import com.mj.bean.MjOrderInfo;
 import org.apache.flink.api.common.functions.OpenContext;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.KeyedStream;

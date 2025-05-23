@@ -1,9 +1,8 @@
 package com.mj.basic4.execute;
 
-import com.mj.dto.MjOrderInfo;
+import com.mj.bean.MjOrderInfo;
 import org.apache.flink.api.common.JobExecutionResult;
 import org.apache.flink.streaming.api.datastream.DataStream;
-import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
 /**

@@ -42,4 +42,12 @@ public class KafkaUtils {
         return createKafkaSource(bootstrapServers, topic, groupId,
                 OffsetsInitializer.latest());
     }
+    // 重载方法（简化调用，默认从 latest 开始消费）
+    public static KafkaSource<String> createKafkaSourceEar(
+            String bootstrapServers,
+            String topic,
+            String groupId) {
+        return createKafkaSource(bootstrapServers, topic, groupId,
+                OffsetsInitializer.earliest());
+    }
 }

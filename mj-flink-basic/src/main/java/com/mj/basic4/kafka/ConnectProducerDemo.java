@@ -1,7 +1,7 @@
 package com.mj.basic4.kafka;
 
 import com.alibaba.fastjson2.JSON;
-import com.mj.dto.OrderInfo;
+import com.mj.bean.OrderInfo;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;

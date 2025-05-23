@@ -1,7 +1,6 @@
 package com.mj.basic4.aggregation;
 
-import com.mj.dto.MjOrderInfo;
-import com.mj.dto.Order;
+import com.mj.bean.MjOrderInfo;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;

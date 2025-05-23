@@ -1,12 +1,11 @@
 package com.mj.basic5.watermark;
 
 import com.alibaba.fastjson2.JSON;
-import com.mj.basic5.data.WaterMarkData;
+import com.mj.bean.WaterMarkData;
+import com.mj.utils.KafkaUtils;
 import com.mj.utils.TimeConverter;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
-import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.connector.kafka.source.KafkaSource;
-import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
@@ -25,19 +24,18 @@ public class WaterMarkDemo3 {
         // 1. 获取流执行环境
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
-        // 2. 创建Kafka数据源
-        KafkaSource<String> kafkaSource = KafkaSource.<String>builder()
-                .setBootstrapServers("mj01:6667")
-                .setTopics("window")
-                .setGroupId("mj-flink-basic")
-                .setStartingOffsets(OffsetsInitializer.latest())
-                .setValueOnlyDeserializer(new SimpleStringSchema())
-                .build();
-        // 3. 从Kafka源创建数据流
+        // 2. 创建 Kafka 数据源（调用工具类）
+        KafkaSource<String> kafkaSource = KafkaUtils.createKafkaSource(
+                "mj01:6667",       // Kafka 集群地址
+                "window",          // 订阅主题
+                "mj-flink-basic"   // 消费者组ID
+        );
+
+        // 3. 从 Kafka 源创建数据流
         DataStreamSource<String> sourceStream = env.fromSource(
                 kafkaSource,
-                WatermarkStrategy.noWatermarks(),
-                "kafka-source"
+                WatermarkStrategy.noWatermarks(),  // 禁用水印（处理时间语义）
+                "kafka-source"                    // 数据源名称
         );
         // 4. 解析JSON数据
         DataStream<WaterMarkData> parsedStream = sourceStream.map(
@@ -46,10 +44,8 @@ public class WaterMarkDemo3 {
         env.getConfig().setAutoWatermarkInterval(200); // 每200ms生成一次水位线
         // 6. 设置事件时间和 Watermark
         WatermarkStrategy<WaterMarkData> orderWatermarkStrategy =
-                WatermarkStrategy.<WaterMarkData>forBoundedOutOfOrderness(Duration.ofSeconds(3))
+                WatermarkStrategy.<WaterMarkData>forGenerator(ctx -> new CustomWatermarkStrategy())
                         .withTimestampAssigner((event, ts) -> event.getEventTime());
-
-
 
         parsedStream = parsedStream.assignTimestampsAndWatermarks(orderWatermarkStrategy);
 
@@ -79,16 +75,12 @@ public class WaterMarkDemo3 {
                         // 构造输出信息
                         String output = String.format(
                                 "\n==== 窗口触发 [%s - %s] ====\n" +
-                                        "用户ID: %s\n" +
                                         "窗口内数据量: %d 条\n" +
                                         "当前水位线: %s (%d)\n" +
                                         "详细数据: %s\n" +
                                         "==============================",
-                                windowStart, windowEnd, key,
-                                usersInWindow.size(),
-                                watermarkTime, watermark,
-                                usersInWindow
-                        );
+                                windowStart, windowEnd,usersInWindow.size(),
+                                watermarkTime, watermark,usersInWindow);
                         out.collect(output);
                     }
                 })

@@ -1,8 +1,7 @@
 package com.mj.basic4.sink;
 
 import com.alibaba.fastjson2.JSON;
-import com.mj.dto.MjOrderInfo;
-import com.mj.dto.Order;
+import com.mj.bean.MjOrderInfo;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.connector.base.DeliveryGuarantee;
 import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;

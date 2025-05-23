@@ -1,6 +1,6 @@
 package com.mj.basic5.watermark;
 
-import com.mj.basic5.data.WaterMarkData;
+import com.mj.bean.WaterMarkData;
 import org.apache.flink.api.common.eventtime.Watermark;
 import org.apache.flink.api.common.eventtime.WatermarkGenerator;
 import org.apache.flink.api.common.eventtime.WatermarkOutput;

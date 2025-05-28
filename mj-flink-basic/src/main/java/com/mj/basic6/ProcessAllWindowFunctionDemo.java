@@ -1,4 +1,4 @@
-package com.mj.basic5.process;
+package com.mj.basic6;
 
 import com.alibaba.fastjson2.JSON;
 import com.mj.bean.WaterMarkData;
@@ -6,12 +6,9 @@ import com.mj.utils.KafkaUtils;
 import com.mj.utils.TimeConverter;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.connector.kafka.source.KafkaSource;
-import org.apache.flink.streaming.api.datastream.DataStream;
-import org.apache.flink.streaming.api.datastream.DataStreamSource;
-import org.apache.flink.streaming.api.datastream.KeyedStream;
-import org.apache.flink.streaming.api.datastream.WindowedStream;
+import org.apache.flink.streaming.api.datastream.*;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
+import org.apache.flink.streaming.api.functions.windowing.ProcessAllWindowFunction;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingProcessingTimeWindows;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
@@ -21,7 +18,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class WindowFullWindowProcessDemo {
+/**
+ * @author 码界探索
+ * 微信: 252810631
+ * @desc 版权所有，请勿外传
+ */
+public class ProcessAllWindowFunctionDemo {
     public static void main(String[] args) throws Exception {
         // 1. 获取流执行环境
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
@@ -43,47 +45,50 @@ public class WindowFullWindowProcessDemo {
         DataStream<WaterMarkData> parsedStream = sourceStream.map(
                 value -> JSON.parseObject(value, WaterMarkData.class)
         );
-        // 5. KeyBy用户ID
-        KeyedStream<WaterMarkData, String> keyedStream = parsedStream.keyBy(WaterMarkData::getUserId);
-        // 6. 定义窗口并处理窗口数据
-        WindowedStream windowedStream = keyedStream.window(TumblingProcessingTimeWindows.of(Duration.ofSeconds(10)));
-        windowedStream.process(new ProcessWindowFunction<WaterMarkData, String, String, TimeWindow>() {
+        // 5. 定义全局窗口（无需 KeyBy）
+        AllWindowedStream<WaterMarkData, TimeWindow> allWindowedStream = parsedStream
+                .windowAll(TumblingProcessingTimeWindows.of(Duration.ofSeconds(10)));
+
+        // 6. 处理全局窗口数据
+        allWindowedStream.process(new ProcessAllWindowFunction<WaterMarkData, String, TimeWindow>() {
             @Override
             public void process(
-                    String key,
                     Context context,
                     Iterable<WaterMarkData> elements,
                     Collector<String> out) {
-                // 将窗口内所有商品存入列表
-                List<WaterMarkData> items = new ArrayList<>();
-                for (WaterMarkData item : elements) {
-                    items.add(item);
+                // 将窗口内所有用户事件存入列表
+                List<WaterMarkData> allUsers = new ArrayList<>();
+                for (WaterMarkData user : elements) {
+                    allUsers.add(user);
                 }
 
-                // 按销售额降序排序
-                items.sort((a, b) -> Double.compare(b.getMoney(), a.getMoney()));
+                // 按销售额降序排序（全局排序）
+                allUsers.sort((a, b) -> Double.compare(b.getMoney(), a.getMoney()));
 
-                // 取 Top 3（若不足3个则取全部）
-                int topSize = Math.min(3, items.size());
-                List<WaterMarkData> top3 = items.subList(0, topSize);
-                List<String> result = top3.stream()
+                // 取全局 Top3（若不足3个则取全部）
+                int topSize = Math.min(3, allUsers.size());
+                List<WaterMarkData> globalTop3 = allUsers.subList(0, topSize);
+                List<String> result = globalTop3.stream()
                         .map(obj -> String.format("%s|%d", obj.getUserId(), obj.getMoney()))
                         .collect(Collectors.toList());
+
                 // 获取窗口时间范围
                 TimeWindow window = context.window();
                 String windowStart = TimeConverter.convertLongToDateTime(window.getStart());
                 String windowEnd = TimeConverter.convertLongToDateTime(window.getEnd());
+
                 // 构造输出信息
                 String output = String.format(
-                        "\n==== 窗口触发 [%s - %s] ====\n" +
-                                "top3: %s\n" +
+                        "\n==== 全局窗口触发 [%s - %s] ====\n" +
+                                "全局Top3: %s\n" +
                                 "==============================",
                         windowStart, windowEnd, result);
-                // 输出结果：Tuple3<类别, 窗口时间, Top3列表>
+
                 out.collect(output);
             }
         }).print();
+
         // 7. 执行作业
-        env.execute("Window Data Printing Demo");
+        env.execute("Global Window Top3 Demo");
     }
 }

@@ -20,8 +20,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class MjSensorReading {
     private String deviceId;
-    private long timestamp;
     private double temperature;
+    private long timestamp;
 
 
 }

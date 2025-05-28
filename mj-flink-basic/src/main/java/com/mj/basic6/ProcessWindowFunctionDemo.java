@@ -1,4 +1,4 @@
-package com.mj.basic5.process;
+package com.mj.basic6;
 
 import com.alibaba.fastjson2.JSON;
 import com.mj.bean.WaterMarkData;
@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class WindowFullWindowProcessDemo {
+public class ProcessWindowFunctionDemo {
     public static void main(String[] args) throws Exception {
         // 1. 获取流执行环境
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();

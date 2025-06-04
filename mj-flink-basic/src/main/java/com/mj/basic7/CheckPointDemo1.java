@@ -1,17 +1,21 @@
 package com.mj.basic7;
 
 import com.alibaba.fastjson2.JSON;
+import com.mj.bean.CheckBean;
 import com.mj.bean.WaterMarkData;
+import com.mj.utils.TimeConverter;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.OpenContext;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
-import org.apache.flink.configuration.CheckpointingOptions;
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.connector.source.util.ratelimit.RateLimiterStrategy;
 import org.apache.flink.configuration.Configuration;
-import org.apache.flink.configuration.RestOptions;
 import org.apache.flink.configuration.StateBackendOptions;
 import org.apache.flink.connector.base.DeliveryGuarantee;
+import org.apache.flink.connector.datagen.source.DataGeneratorSource;
+import org.apache.flink.connector.datagen.source.GeneratorFunction;
 import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
 import org.apache.flink.connector.kafka.sink.KafkaSink;
 import org.apache.flink.connector.kafka.source.KafkaSource;
@@ -23,6 +27,8 @@ import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
 import org.apache.flink.util.Collector;
 import org.apache.kafka.clients.producer.ProducerConfig;
 
+import java.util.Random;
+
 /**
  * @author 码界探索
  * 微信: 252810631
@@ -30,65 +36,47 @@ import org.apache.kafka.clients.producer.ProducerConfig;
  */
 public class CheckPointDemo1 {
     public static void main(String[] args) throws Exception {
-        Configuration conf = new Configuration();
-        conf.setString(RestOptions.BIND_PORT.key(), "8081"); // 设置WebUI端口为8081
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(conf);
+        // 1. 获取流执行环境
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
+        env.getCheckpointConfig().setCheckpointInterval(5000l);
         Configuration config = new Configuration();
         config.set(StateBackendOptions.STATE_BACKEND, "hashmap");
-        config.set(CheckpointingOptions.CHECKPOINT_STORAGE, "filesystem");
-        config.set(CheckpointingOptions.CHECKPOINTS_DIRECTORY, "file:///D:/flink2.0/");
-        env.enableCheckpointing(5000);
-
-        env.getCheckpointConfig().setMaxConcurrentCheckpoints(3);
         env.configure(config);
-        // 2. 创建Kafka数据源
-        KafkaSource<String> kafkaSource = KafkaSource.<String>builder()
-                .setBootstrapServers("mj01:6667")
-                .setTopics("window")
-                .setGroupId("mj-flink-basic")
-                .setStartingOffsets(OffsetsInitializer.latest())
-                .setValueOnlyDeserializer(new SimpleStringSchema())
-                .build();
-        // 3. 从Kafka源创建数据流
-        SingleOutputStreamOperator<String> sourceStream = env.fromSource(
-                kafkaSource,
+        // 2. 创建数据生成器源 (生成 CheckBean 对象)
+        DataGeneratorSource<CheckBean> dataGeneratorSource =
+                new DataGeneratorSource<>(
+                        new GeneratorFunction<Long, CheckBean>() {
+                            private final Random random = new Random();
+                            @Override
+                            public CheckBean map(Long value) {
+                                // 生成随机用户ID (简化版UUID)
+                                String userId = "user_1" ;
+                                int money = 100;
+                                return new CheckBean(userId, money);
+                            }
+                        },
+                        Long.MAX_VALUE,
+                        RateLimiterStrategy.perSecond(1), //每秒1条
+                        TypeInformation.of(CheckBean.class) // 指定CheckBean类型信息
+                );
+
+        // 3. 从数据生成器源创建数据流
+        DataStream<CheckBean> stream = env.fromSource(
+                dataGeneratorSource,
                 WatermarkStrategy.noWatermarks(),
-                "kafka-source"
-        ).uid("KafkaSource-1").name("KafkaSource-1");
-        // 4. 解析JSON数据
-        DataStream<WaterMarkData> parsedStream = sourceStream.map(
-                value -> JSON.parseObject(value, WaterMarkData.class)
-        ).uid("Map-1").name("Map-1");
-
+                "checkbean-generator"
+        );
         // 按用户ID分组处理金额汇总
-        DataStream<String> result = parsedStream.keyBy(WaterMarkData::getUserId)
-                .process(new HashMapStateBackendDemo.MoneySumProcessFunction()).uid("Process-1").name("Process-1");
-        // 配置 Kafka Sink
-        KafkaSink<String> kafkaSink = KafkaSink.<String>builder()
-                .setBootstrapServers("mj01:6667")  // Kafka集群地址
-                .setRecordSerializer(KafkaRecordSerializationSchema.builder()
-                        .setTopic("sink1")  // 目标Topic
-                        .setValueSerializationSchema(new SimpleStringSchema())  // 字符串序列化
-                        .build()
-                )
-                // 写到kafka的一致性级别： 精准一次、至少一次
-                .setDeliveryGuarantee(DeliveryGuarantee.EXACTLY_ONCE)
-                // 如果是精准一次，必须设置 事务的前缀
-                .setTransactionalIdPrefix("flink-form-sink1-")
-                // 如果是精准一次，必须设置 事务超时时间: 大于checkpoint间隔
-                .setProperty(ProducerConfig.TRANSACTION_TIMEOUT_CONFIG, 10*60*1000 + "")
-                .build();
-
+        DataStream<String> result = stream.keyBy(CheckBean::getUserId)
+                .process(new MoneySumProcessFunction()).uid("Process-1").name("Process-1");
+        result.print();
         // 数据写入Kafka
-        result.sinkTo(kafkaSink).uid("KafkaSink-1").name("KafkaSink-1");
-
         env.execute("Money Sum Tracking");
     }
 
     // 自定义处理函数-金额累加
-    public static class MoneySumProcessFunction
-            extends KeyedProcessFunction<String, WaterMarkData, String> {
+    public static class MoneySumProcessFunction extends KeyedProcessFunction<String, CheckBean, String> {
         // 声明值状态（保存当前用户的金额总和）
         private ValueState<Integer> sumState;
 
@@ -101,7 +89,7 @@ public class CheckPointDemo1 {
         }
 
         @Override
-        public void processElement(WaterMarkData data, Context ctx, Collector<String> out) throws Exception {
+        public void processElement(CheckBean data, Context ctx, Collector<String> out) throws Exception {
             // 获取当前状态值（若为空则默认为0）
             Integer currentSum = sumState.value() == null ? 0 : sumState.value();
             // 累加新金额
@@ -109,8 +97,8 @@ public class CheckPointDemo1 {
             // 更新状态
             sumState.update(newSum);
             // 输出当前总金额
-            out.collect("用户 " + data.getUserId()
-                    + " 当前总金额: " + newSum);
+            out.collect("当前时间："+ TimeConverter.convertLongToDateTime(System.currentTimeMillis()) +
+                    ",用户 " + data.getUserId() + " 当前总金额: " + newSum);
         }
     }
 }

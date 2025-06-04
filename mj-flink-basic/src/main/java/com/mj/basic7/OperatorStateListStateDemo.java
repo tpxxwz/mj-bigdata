@@ -12,18 +12,22 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.source.legacy.SourceFunction;
 
+/**
+ * @author 码界探索
+ * 微信: 252810631
+ * @desc 版权所有，请勿外传
+ */
 public class OperatorStateListStateDemo {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        env.setParallelism(2); // 设置并行度为2
-
-        // 自定义数据源（每秒生成一个数字）
+        env.setParallelism(1); // 必须设为1（SourceFunction不支持并行执行）
+        env.getCheckpointConfig().setCheckpointInterval(5000L);
         DataStream<Long> inputStream = env.addSource(new CounterSource());
 
         inputStream
                 .map(new MapFunction<Long, String>() {
                     @Override
-                    public String map(Long value) throws Exception {
+                    public String map(Long value) {
                         return "当前总数: " + value;
                     }
                 })
@@ -35,17 +39,17 @@ public class OperatorStateListStateDemo {
     // 自定义数据源（带状态）
     public static class CounterSource implements SourceFunction<Long>, CheckpointedFunction {
         private volatile boolean isRunning = true;
-        private Long currentCount = 0L; // 当前计数
-        private ListState<Long> state;  // OperatorState中的ListState
+        private long currentCount = 0L;  // 使用基本类型避免空指针
+        private ListState<Long> state;   // OperatorState中的ListState
 
         @Override
         public void run(SourceContext<Long> ctx) throws Exception {
             while (isRunning) {
                 synchronized (ctx.getCheckpointLock()) {
                     currentCount++;
-                    ctx.collect(currentCount); // 发送计数
+                    ctx.collect(currentCount);
                 }
-                Thread.sleep(1000); // 每秒发送一次
+                Thread.sleep(1000);
             }
         }
 
@@ -54,28 +58,38 @@ public class OperatorStateListStateDemo {
             isRunning = false;
         }
 
-        // ----------------- 状态管理核心方法 -----------------
+        // ============== 状态管理核心方法 ==============
         @Override
         public void snapshotState(FunctionSnapshotContext context) throws Exception {
-            // 保存状态：清空旧值，写入当前计数
+            // 1. 清空旧状态
             state.clear();
+            // 2. 写入当前状态值
             state.add(currentCount);
+
+            // 生产环境应移除调试输出
+            System.out.println("Checkpoint保存: " + currentCount);
         }
 
         @Override
         public void initializeState(FunctionInitializationContext context) throws Exception {
-            // 初始化状态：从检查点恢复或创建新状态
+            // 状态描述符（名称+类型）
             ListStateDescriptor<Long> descriptor = new ListStateDescriptor<>(
                     "counterState",
                     TypeInformation.of(new TypeHint<Long>() {})
             );
+
+            // 获取或创建状态
             state = context.getOperatorStateStore().getListState(descriptor);
 
-            // 恢复状态（如果是故障重启）
+            // 状态恢复逻辑
             if (context.isRestored()) {
+                // 处理可能的多个状态值（取最大值）
+                long maxValue = 0L;
                 for (Long value : state.get()) {
-                    currentCount = value; // 取最后一个值（合并后的状态可能有多个值）
+                    maxValue = Math.max(maxValue, value);
                 }
+                currentCount = maxValue;
+                System.out.println("从检查点恢复: " + currentCount);
             }
         }
     }

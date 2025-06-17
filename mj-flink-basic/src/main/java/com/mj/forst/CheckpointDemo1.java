@@ -9,8 +9,13 @@ import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.common.state.StateTtlConfig;
 import org.apache.flink.api.common.state.v2.ValueState;
 import org.apache.flink.api.common.state.v2.ValueStateDescriptor;
+import org.apache.flink.api.common.typeutils.base.DoubleSerializer;
+import org.apache.flink.configuration.CheckpointingOptions;
+import org.apache.flink.configuration.Configuration;
+import org.apache.flink.configuration.StateBackendOptions;
 import org.apache.flink.connector.kafka.source.KafkaSource;
 import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
+import org.apache.flink.state.forst.ForStOptions;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -30,7 +35,12 @@ public class CheckpointDemo1 {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
-
+        Configuration config = new Configuration();
+        config.set(StateBackendOptions.STATE_BACKEND, "forst");
+        config.set(CheckpointingOptions.CHECKPOINTS_DIRECTORY, "hdfs://mj01:8020/flink-chk");
+        config.set(ForStOptions.PRIMARY_DIRECTORY, "hdfs://mj01:8020/forst");
+        config.set(CheckpointingOptions.INCREMENTAL_CHECKPOINTS, true);
+        env.configure(config);
         // 2. 配置检查点存储
         env.enableCheckpointing(5000);
 
@@ -79,6 +89,8 @@ public class CheckpointDemo1 {
             // 2. 创建状态描述符（RocksDB需要明确序列化）
             ValueStateDescriptor<Integer> descriptor =
                     new ValueStateDescriptor<>("moneySum", Integer.class);
+            //ValueStateDescriptor<Double> descriptor = new ValueStateDescriptor<>("moneySum", DoubleSerializer.INSTANCE);
+
             descriptor.enableTimeToLive(ttlConfig);
 
             sumState = getRuntimeContext().getState(descriptor);

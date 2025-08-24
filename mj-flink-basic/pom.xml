@@ -13,8 +13,8 @@
 
     <properties>
         <!-- 指定 Java 编译版本为 11 -->
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
 
         <!-- Flink 相关依赖的版本配置 -->
         <!-- 注意：Flink 2.0.0 与 shaded 19.0 版本需确认兼容性 -->
@@ -100,6 +100,19 @@
             <version>${flink.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-table-api-java-bridge</artifactId>
+            <version>${flink.version}</version>
+        </dependency>
+
+        <!-- Blink Planner (provided, 集群已有) -->
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-table-planner-loader</artifactId>
+            <version>${flink.version}</version>
+        </dependency>
+
         <!-- Flink Kafka 连接器（注意版本格式不同） -->
         <dependency>
             <groupId>org.apache.flink</groupId>
@@ -127,6 +140,8 @@
             <artifactId>flink-connector-jdbc-mysql</artifactId>
             <version>4.0.0-2.0</version>  <!-- 新版 connector 版本命名规则 -->
         </dependency>
+
+
         <!--  HikariCP 连接池  -->
         <dependency>
             <groupId>com.zaxxer</groupId>

@@ -16,7 +16,7 @@ public class Hello2APIDDL {
         StreamTableEnvironment tableEnvironment = StreamTableEnvironment.create(environment);
         // 创建表：方案1
         FileSource<String> source = FileSource
-                .forRecordStreamFormat(new TextLineInputFormat(), new Path("file:///tmp/dept.txt"))
+                .forRecordStreamFormat(new TextLineInputFormat(), new Path("mj-flink-basic/tmp/dept.txt"))
                 .build();
         DataStreamSource<String> deptSource = environment.fromSource(
                 source,

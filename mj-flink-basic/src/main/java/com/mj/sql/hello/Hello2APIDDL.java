@@ -14,7 +14,7 @@ public class Hello2APIDDL {
         // 运行环境
         StreamExecutionEnvironment environment = StreamExecutionEnvironment.getExecutionEnvironment();
         StreamTableEnvironment tableEnvironment = StreamTableEnvironment.create(environment);
-        // 创建表：方案1
+        // 创建表：方案1 流表转换
         FileSource<String> source = FileSource
                 .forRecordStreamFormat(new TextLineInputFormat(), new Path("mj-flink-basic/tmp/dept.txt"))
                 .build();
@@ -24,5 +24,14 @@ public class Hello2APIDDL {
                 "file-source");
         Table deptTable = tableEnvironment.fromDataStream(deptSource);
         deptTable.execute().print();
+
+        // 创建表：方案2 TableAPI
+        // tableEnvironment.createTable();
+        // tableEnvironment.createTemporaryView();
+        //已经过时了：推荐使用上面的方法
+        // tableEnvironment.registerDataStream();
+
+        // 创建表： 方案3 SQL
+        // tableEnvironment.executeSql("create table ...");
     }
 }

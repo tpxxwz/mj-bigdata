@@ -13,8 +13,8 @@
 
     <properties>
         <!-- 指定 Java 编译版本为 11 -->
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
 
         <!-- Flink 相关依赖的版本配置 -->
         <!-- 注意：Flink 2.0.0 与 shaded 19.0 版本需确认兼容性 -->
@@ -162,4 +162,16 @@
             <version>${flink.version}</version>
         </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>21</source>
+                    <target>21</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

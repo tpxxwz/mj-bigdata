@@ -7,6 +7,7 @@ import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 
 // 创建运行环境
 public class Hello01CommonAPI {
+
     public static void main(String[] args) {
         // 创建环境配置【流批可以自己选择】
         EnvironmentSettings environmentSettings = EnvironmentSettings.newInstance().inStreamingMode().build();
@@ -15,4 +16,5 @@ public class Hello01CommonAPI {
         StreamExecutionEnvironment environment = StreamExecutionEnvironment.getExecutionEnvironment();
         StreamTableEnvironment streamTableEnvironment = StreamTableEnvironment.create(environment);
     }
+
 }

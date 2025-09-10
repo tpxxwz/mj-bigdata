@@ -1,4 +1,4 @@
-package com.mj.sql.table.schema;
+package com.mj.sql.table._02schema;
 
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.table.api.DataTypes;

@@ -1,4 +1,4 @@
-package com.mj.sql.table.connector;
+package com.mj.sql.table._01connector;
 
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.table.api.TableResult;

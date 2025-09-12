@@ -1,5 +1,6 @@
 package com.mj.sql.hello;
 
+import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.connector.file.src.FileSource;
 import org.apache.flink.connector.file.src.reader.TextLineInputFormat;
 import org.apache.flink.core.fs.Path;
@@ -20,7 +21,7 @@ public class Hello2APIDDL {
                 .build();
         DataStreamSource<String> deptSource = environment.fromSource(
                 source,
-                org.apache.flink.api.common.eventtime.WatermarkStrategy.noWatermarks(),
+                WatermarkStrategy.noWatermarks(),
                 "file-source");
         Table deptTable = tableEnvironment.fromDataStream(deptSource);
         deptTable.execute().print();

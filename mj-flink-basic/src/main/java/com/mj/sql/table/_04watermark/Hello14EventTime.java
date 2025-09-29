@@ -19,7 +19,7 @@ import java.util.Random;
 
 public class Hello14EventTime {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         // 执行环境
         StreamExecutionEnvironment environment = StreamExecutionEnvironment.getExecutionEnvironment();
         StreamTableEnvironment tableEnvironment = StreamTableEnvironment.create(environment);
@@ -43,14 +43,15 @@ public class Hello14EventTime {
         // 创建表: SQL
         Random random = new Random();
         long start = System.currentTimeMillis();
+        environment.setParallelism(1);
         DataGeneratorSource<WaterMarkData> dataGeneratorSource = new DataGeneratorSource<>(
                 counter -> {
                     String userId = String.valueOf(random.nextInt(1000) + 1);
-                    Long eventTime = start + counter;
+                    Long eventTime = start + counter * 1000;
                     return new WaterMarkData(userId, eventTime, 0);
                 },
-                2,
-                RateLimiterStrategy.perSecond(10),
+                100,
+                RateLimiterStrategy.perSecond(1),
                 Types.POJO(WaterMarkData.class));
         DataStream<WaterMarkData> stream1 = environment.fromSource(
                 dataGeneratorSource,
@@ -59,6 +60,7 @@ public class Hello14EventTime {
         );
         // 4. 打印数据流
         stream1.print();
+        // environment.execute("DataGenerator Print Example");
         WatermarkStrategy<WaterMarkData> watermarkStrategy = WatermarkStrategy.<WaterMarkData>forBoundedOutOfOrderness(
                         Duration.ofSeconds(5))
                 .withTimestampAssigner((wm, l) -> wm.getEventTime());
@@ -74,7 +76,7 @@ public class Hello14EventTime {
                         .column("eventTime", DataTypes.BIGINT())
                         .columnByExpression("pt", "NOW()")
                         .columnByExpression("et", "TO_TIMESTAMP(FROM_UNIXTIME(eventTime/1000))")
-                        .watermark("et", "et - INTERVAL '5' SECOND")
+                        .watermark("et", "et - INTERVAL '2' SECOND")
                         .build());
         tableEnvironment.sqlQuery("select * from " + table.toString()).execute().print();
     }

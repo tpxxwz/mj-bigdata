@@ -3,6 +3,15 @@ package com.mj.sql.table._05tvf;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 
+/**
+ * TUMBLE(TABLE data, DESCRIPTOR(timecol), size [, offset ])
+ * data ：拥有时间属性列的表。
+ * timecol ：列描述符，决定数据的哪个时间属性列应该映射到窗口。
+ * size ：窗口的大小（时长）。
+ * offset ：窗口的偏移量 [非必填]。
+ * <p>
+ * https://nightlies.apache.org/flink/flink-docs-release-2.1/zh/docs/dev/table/sql/queries/window-tvf/
+ */
 public class hello15Tumble {
 
     public static void main(String[] args) {

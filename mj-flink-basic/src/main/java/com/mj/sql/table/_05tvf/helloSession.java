@@ -3,7 +3,6 @@ package com.mj.sql.table._05tvf;
 import com.mj.utils.DateUtils;
 import com.mj.utils.KafkaUtils;
 import org.apache.commons.lang3.RandomUtils;
-import org.apache.flink.api.common.ExecutionConfig;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 
@@ -17,7 +16,7 @@ import java.util.concurrent.TimeUnit;
  * gap：两个事件被认为属于同一个会话窗口的最大时间间隔。
  * 月榜 周榜 隔一段时间要从0开始算 算也要一段一段时间算
  */
-public class helloSession {
+public class HelloSession {
 
     public static void main(String[] args) {
         String topic = "kafka_tvf_session_topic";

@@ -13,7 +13,7 @@ import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
  * <p>
  * 月榜 周榜 隔一段时间要从0开始算 算也要一段一段时间算
  */
-public class hello17Cumulate {
+public class Hello17Cumulate {
 
     public static void main(String[] args) {
         // 运行环境

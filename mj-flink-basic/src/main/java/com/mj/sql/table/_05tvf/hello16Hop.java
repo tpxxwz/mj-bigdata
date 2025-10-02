@@ -12,7 +12,7 @@ import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
  * offset：窗口的偏移量 [非必填]。
  *
  */
-public class hello16Hop {
+public class Hello16Hop {
 
     public static void main(String[] args) {
         // 运行环境

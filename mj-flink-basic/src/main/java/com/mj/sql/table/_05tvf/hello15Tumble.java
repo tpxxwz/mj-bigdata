@@ -9,10 +9,12 @@ import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
  * timecol ：列描述符，决定数据的哪个时间属性列应该映射到窗口。
  * size ：窗口的大小（时长）。
  * offset ：窗口的偏移量 [非必填]。
+ * 如果是size INTERVAL '5' SECONDS 原本是0 5 15 20 这样的
+ * offset 为INTERVAL '1' SECONDS 的话 会是 1 6 16 21
  * <p>
  * https://nightlies.apache.org/flink/flink-docs-release-2.1/zh/docs/dev/table/sql/queries/window-tvf/
  */
-public class hello15Tumble {
+public class Hello15Tumble {
 
     public static void main(String[] args) {
         // 运行环境
@@ -43,7 +45,7 @@ public class hello15Tumble {
         // 按照窗口进行查询--分组查询 下面的INTERVAL '2' SECOND 表示滚动窗口的长度，也就是每 5 秒聚合一次。
         tableEnvironment.sqlQuery("""
                 SELECT window_start, window_end, gid, sum(sales) FROM TABLE
-                (TUMBLE(TABLE t_goods, DESCRIPTOR(ts), INTERVAL '5' SECONDS))
+                (TUMBLE(TABLE t_goods, DESCRIPTOR(ts), INTERVAL '5' SECONDS, INTERVAL '1' SECONDS))
                 GROUP BY window_start, window_end, gid;
                 """).execute().print();
     }
